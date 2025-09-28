@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Commerce Store</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+            flex: 1;
+            text-align: left;
+        }
+
+        .nav-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: nowrap;
+        }
+
+        .search-bar {
+            flex: 1;
+            max-width: 500px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 8px;
+            border-radius: 4px;
+            border: none;
+            font-size: 0.9rem;
+        }
+
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cart-icon,
+        .wishlist-icon {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .cart-count,
+        .wishlist-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: red;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 5px;
+            font-size: 10px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 15px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .hamburger {
+            display: none;
+            font-size: 20px;
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .categories-menu {
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .categories-menu.sidebar {
+            width: 200px;
+            flex-shrink: 0;
+        }
+
+        .categories-menu.mobile {
+            margin-bottom: 20px;
+            transform: translateY(-20px);
+            opacity: 0;
+        }
+
+        .categories-menu.mobile.active {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .categories-menu ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .categories-menu li {
+            padding: 10px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .categories-menu li.active,
+        .categories-menu li:hover {
+            background: #007bff;
+            color: white;
+        }
+
+        .categories-menu.hidden {
+            display: none;
+        }
+
+        main {
+            flex: 1;
+            padding: 0 10px;
+        }
+
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .product-card img {
+            max-width: 100%;
+            height: 150px;
+            object-fit: cover;
+            background: #eee;
+        }
+
+        .stock-status {
+            font-size: 12px;
+            color: #555;
+        }
+
+        .stock-status.low {
+            color: red;
+        }
+
+        .stock-status.out {
+            color: darkred;
+            font-weight: bold;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .pagination button {
+            padding: 5px 10px;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 4px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .close {
+            float: right;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        .form-group label {
+            display: block;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover:not(:disabled) {
+            background: #0056b3;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .cart-item,
+        .wishlist-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .quantity {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        #orderHistory,
+        #adminPanel {
+            margin-top: 20px;
+        }
+
+        .order,
+        .admin-section {
+            background: white;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .reviews {
+            margin-top: 20px;
+        }
+
+        .review {
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .low-stock-alert {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #ff4444;
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .hamburger {
+                display: block;
+            }
+
+            .categories-menu.sidebar {
+                display: none;
+            }
+
+            .categories-menu.mobile {
+                display: none;
+            }
+
+            .categories-menu.mobile.active {
+                display: block;
+            }
+
+            .products {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+
+            .modal-content {
+                width: 95%;
+                padding: 15px;
+            }
+
+            .nav-container {
+                flex: 1;
+                justify-content: flex-end;
+            }
+
+            .search-bar {
+                display: none;
+            }
+
+            .search-bar.active {
+                display: block;
+                position: absolute;
+                top: 60px;
+                left: 15px;
+                right: 15px;
+                background: white;
+                padding: 5px;
+                border-radius: 4px;
+                z-index: 1001;
+            }
+
+            .search-bar.active input {
+                border: 1px solid #ddd;
+            }
+        }
+
+        @media (min-width: 769px) {
+
+            .categories-menu.mobile,
+            .hamburger {
+                display: none;
+            }
+
+            .categories-menu.sidebar {
+                display: block;
+            }
+
+            .search-bar {
+                display: block;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header {
+                flex-wrap: wrap;
+                padding: 8px 10px;
+            }
+
+            .nav-container {
+                gap: 5px;
+            }
+
+            .user-actions {
+                gap: 5px;
+            }
+
+            button {
+                padding: 6px 10px;
+                font-size: 0.8rem;
+            }
+
+            .cart-icon svg,
+            .wishlist-icon svg {
+                width: 20px;
+                height: 20px;
+            }
+
+            .cart-count,
+            .wishlist-count {
+                font-size: 8px;
+                padding: 1px 4px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <button class="hamburger" onclick="toggleCategories()">☰</button>
+        <h1>E-Shop</h1>
+        <div class="nav-container">
+            <button class="search-toggle" onclick="toggleSearch()">🔍</button>
+            <div class="search-bar" id="searchBar">
+                <input type="text" id="searchInput" placeholder="Search products..." oninput="searchProducts()">
+            </div>
+            <div class="user-actions">
+                <span id="userName"></span>
+                <button id="profileBtn" onclick="showModal('profileModal')" style="display:none;">Profile</button>
+                <button id="loginBtn" onclick="showModal('loginModal')">Login</button>
+                <button id="registerBtn" onclick="showModal('registerModal')" style="display:none;">Register</button>
+                <button id="logoutBtn" onclick="logout()" style="display:none;">Logout</button>
+                <button id="adminBtn" onclick="showModal('adminModal')" style="display:none;">Admin</button>
+                <div class="wishlist-icon" onclick="showModal('wishlistModal')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                        <path
+                            d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
+                    </svg>
+                    <span id="wishlistCount" class="wishlist-count">0</span>
+                </div>
+                <div class="cart-icon" onclick="showModal('cartModal')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                        <path
+                            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span id="cartCount" class="cart-count">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <aside class="categories-menu sidebar" id="categoriesSidebar">
+            <h3>Categories</h3>
+            <ul id="categories">
+                <li onclick="filterByCategory('All')" class="active">All</li>
+            </ul>
+        </aside>
+        <div class="categories-menu mobile hidden" id="categoriesMenu">
+            <h3>Categories</h3>
+            <ul id="categoriesMobile">
+                <li onclick="filterByCategory('All')" class="active">All</li>
+            </ul>
+        </div>
+        <main>
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="sortSelect">Sort By</label>
+                    <select id="sortSelect" onchange="sortProducts()">
+                        <option value="">Select</option>
+                        <option value="price-asc">Price: Low to High</option>
+                        <option value="price-desc">Price: High to Low</option>
+                        <option value="name-asc">Name: A-Z</option>
+                        <option value="name-desc">Name: Z-A</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="priceRange">Price Range</label>
+                    <input type="range" id="priceRange" min="0" max="1000" value="1000" oninput="filterByPrice()">
+                    <span id="priceRangeValue">$0 - $1000</span>
+                </div>
+                <div class="filter-group">
+                    <label for="stockFilter">Stock Status</label>
+                    <select id="stockFilter" onchange="filterByStock()">
+                        <option value="all">All</option>
+                        <option value="in-stock">In Stock</option>
+                        <option value="low-stock">Low Stock (≤5)</option>
+                        <option value="out-of-stock">Out of Stock</option>
+                    </select>
+                </div>
+            </div>
+            <section class="products" id="products"></section>
+            <div class="pagination" id="pagination"></div>
+            <section id="orderHistory" style="display:none;">
+                <h2>Order History</h2>
+                <div id="ordersList"></div>
+            </section>
+        </main>
+    </div>
+    <div class="low-stock-alert" id="lowStockAlert"></div>
+
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('loginModal')">&times;</span>
+            <h2>Login</h2>
+            <div class="form-group">
+                <label for="loginUsername">Username</label>
+                <input type="text" id="loginUsername">
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">Password</label>
+                <input type="password" id="loginPassword">
+            </div>
+            <button onclick="login()">Login</button>
+            <p>Not registered? <a href="#" onclick="showModal('registerModal'); closeModal('loginModal')">Register</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal" id="registerModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('registerModal')">&times;</span>
+            <h2>Register</h2>
+            <div class="form-group">
+                <label for="regUsername">Username</label>
+                <input type="text" id="regUsername">
+            </div>
+            <div class="form-group">
+                <label for="regEmail">Email</label>
+                <input type="email" id="regEmail">
+            </div>
+            <div class="form-group">
+                <label for="regPassword">Password</label>
+                <input type="password" id="regPassword">
+            </div>
+            <div class="form-group">
+                <label for="regRole">Role</label>
+                <select id="regRole">
+                    <option value="customer">Customer</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            <button onclick="register()">Register</button>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div class="modal" id="profileModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('profileModal')">&times;</span>
+            <h2>Edit Profile</h2>
+            <div class="form-group">
+                <label for="profileUsername">Username</label>
+                <input type="text" id="profileUsername" readonly>
+            </div>
+            <div class="form-group">
+                <label for="profileEmail">Email</label>
+                <input type="email" id="profileEmail">
+            </div>
+            <div class="form-group">
+                <label for="profilePassword">New Password (leave blank to keep current)</label>
+                <input type="password" id="profilePassword">
+            </div>
+            <button onclick="updateProfile()">Update Profile</button>
+        </div>
+    </div>
+
+    <!-- Product Details Modal -->
+    <div class="modal" id="productModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('productModal')">&times;</span>
+            <img id="detailImage" style="width:100%; height:200px; object-fit:cover; background:#eee;" loading="lazy"
+                onerror="this.src='https://images.unsplash.com/photo-1501426026826-31c667bdf23d';">
+            <h2 id="detailName"></h2>
+            <p id="detailDescription"></p>
+            <p id="detailPrice"></p>
+            <p id="detailStock"></p>
+            <button id="addToCartBtn" onclick="addToCartFromDetails()">Add to Cart</button>
+            <button id="wishlistBtn" onclick="toggleWishlist()"></button>
+            <div class="reviews">
+                <h3>Reviews</h3>
+                <div id="reviewsList"></div>
+                <div class="form-group">
+                    <label for="reviewText">Add Review</label>
+                    <textarea id="reviewText" rows="3"></textarea>
+                </div>
+                <button onclick="addReview()">Submit Review</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Modal -->
+    <div class="modal" id="cartModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('cartModal')">&times;</span>
+            <h2>Shopping Cart</h2>
+            <div id="cartItems"></div>
+            <p>Total: $<span id="cartTotal">0</span></p>
+            <button onclick="showModal('checkoutModal'); closeModal('cartModal')">Checkout</button>
+        </div>
+    </div>
+
+    <!-- Wishlist Modal -->
+    <div class="modal" id="wishlistModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('wishlistModal')">&times;</span>
+            <h2>Wishlist</h2>
+            <div id="wishlistItems"></div>
+        </div>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div class="modal" id="checkoutModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('checkoutModal')">&times;</span>
+            <h2>Checkout</h2>
+            <div class="form-group">
+                <label for="address">Shipping Address</label>
+                <input type="text" id="address">
+            </div>
+            <div class="form-group">
+                <label for="discountCode">Discount Code</label>
+                <input type="text" id="discountCode">
+                <button onclick="applyDiscount()">Apply</button>
+            </div>
+            <div class="form-group">
+                <label for="paymentMethod">Payment Method</label>
+                <select id="paymentMethod">
+                    <option value="credit">Credit Card</option>
+                    <option value="paypal">PayPal</option>
+                    <option value="googlepay">Google Pay</option>
+                </select>
+            </div>
+            <p>Discount: <span id="discountAmount">0%</span></p>
+            <p>Total: $<span id="checkoutTotal">0</span></p>
+            <button onclick="placeOrder()">Place Order</button>
+        </div>
+    </div>
+
+    <!-- Admin Panel Modal -->
+    <div class="modal" id="adminModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('adminModal')">&times;</span>
+            <h2>Admin Panel</h2>
+            <div class="admin-section">
+                <h3>Search Products</h3>
+                <div class="form-group">
+                    <input type="text" id="adminSearch" placeholder="Search products..."
+                        oninput="renderAdminProducts()">
+                </div>
+            </div>
+            <div class="admin-section">
+                <h3>Add Product</h3>
+                <div class="form-group">
+                    <label for="adminProductName">Name</label>
+                    <input type="text" id="adminProductName">
+                </div>
+                <div class="form-group">
+                    <label for="adminProductPrice">Price</label>
+                    <input type="number" id="adminProductPrice">
+                </div>
+                <div class="form-group">
+                    <label for="adminProductCategory">Category</label>
+                    <input type="text" id="adminProductCategory">
+                </div>
+                <div class="form-group">
+                    <label for="adminProductStock">Stock</label>
+                    <input type="number" id="adminProductStock">
+                </div>
+                <div class="form-group">
+                    <label for="adminProductImage">Image Upload</label>
+                    <input type="file" id="adminProductImage" accept="image/*">
+                </div>
+                <div class="form-group">
+                    <label for="adminProductDesc">Description</label>
+                    <textarea id="adminProductDesc"></textarea>
+                </div>
+                <button onclick="addProduct()">Add Product</button>
+            </div>
+            <div class="admin-section">
+                <h3>Edit Product</h3>
+                <div class="form-group">
+                    <label for="editProductId">Product ID</label>
+                    <input type="number" id="editProductId" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="editProductName">Name</label>
+                    <input type="text" id="editProductName">
+                </div>
+                <div class="form-group">
+                    <label for="editProductPrice">Price</label>
+                    <input type="number" id="editProductPrice">
+                </div>
+                <div class="form-group">
+                    <label for="editProductCategory">Category</label>
+                    <input type="text" id="editProductCategory">
+                </div>
+                <div class="form-group">
+                    <label for="editProductStock">Stock</label>
+                    <input type="number" id="editProductStock">
+                </div>
+                <div class="form-group">
+                    <label for="editProductImage">Image Upload</label>
+                    <input type="file" id="editProductImage" accept="image/*">
+                </div>
+                <div class="form-group">
+                    <label for="editProductDesc">Description</label>
+                    <textarea id="editProductDesc"></textarea>
+                </div>
+                <button onclick="updateProduct()">Update Product</button>
+            </div>
+            <div class="admin-section">
+                <h3>Product List</h3>
+                <table id="adminProductsTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Price</th>
+                            <th>Category</th>
+                            <th>Stock</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="admin-section">
+                <h3>Manage Users</h3>
+                <table id="adminUsersTable">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="admin-section">
+                <h3>Manage Orders</h3>
+                <table id="adminOrdersTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>User</th>
+                            <th>Total</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="admin-section">
+                <h3>Manage Discount Codes</h3>
+                <div class="form-group">
+                    <label for="adminDiscountCode">Code</label>
+                    <input type="text" id="adminDiscountCode">
+                </div>
+                <div class="form-group">
+                    <label for="adminDiscountPercent">Percentage</label>
+                    <input type="number" id="adminDiscountPercent">
+                </div>
+                <button onclick="addDiscountCode()">Add Discount Code</button>
+                <table id="adminDiscountsTable">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Percentage</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let products = JSON.parse(localStorage.getItem('products') || '[]');
+        if (products.length === 0) {
+            products = [
+                { id: 1, name: 'Laptop', price: 999, category: 'Electronics', stock: 10, image: 'https://unsplash.com/photos/macbook-pro-turned-on-Bd7gNnWJBkU', description: 'High performance laptop', reviews: [] },
+                { id: 2, name: 'Smartphone', price: 499, category: 'Electronics', stock: 15, image: 'https://images.unsplash.com/photo-1511707171634-5f8972069b75', description: 'Latest smartphone model', reviews: [] },
+                { id: 3, name: 'Headphones', price: 99, category: 'Electronics', stock: 20, image: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c7a2', description: 'Noise-cancelling headphones', reviews: [] },
+                { id: 4, name: 'Smartwatch', price: 199, category: 'Electronics', stock: 2, image: 'https://images.unsplash.com/photo-15232753359764-37898b6baf30', description: 'Fitness tracking smartwatch', reviews: [] },
+                { id: 5, name: 'T-Shirt', price: 19, category: 'Clothing', stock: 50, image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab', description: 'Comfortable cotton t-shirt', reviews: [] },
+                { id: 6, name: 'Jeans', price: 49, category: 'Clothing', stock: 30, image: 'https://images.unsplash.com/photo-1542272604-787c3835535d', description: 'Stylish denim jeans', reviews: [] },
+                { id: 7, name: 'Novel', price: 15, category: 'Books', stock: 25, image: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f', description: 'Bestselling novel', reviews: [] },
+                { id: 8, name: 'Textbook', price: 50, category: 'Books', stock: 12, image: 'https://images.unsplash.com/photo-1532012197267-da84d127e765', description: 'Educational textbook', reviews: [] },
+                { id: 9, name: 'Camera', price: 299, category: 'Electronics', stock: 0, image: 'https://images.unsplash.com/photo-1519638399536-2b99874a4b7a', description: 'Digital camera', reviews: [] },
+                { id: 10, name: 'Backpack', price: 39, category: 'Accessories', stock: 18, image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62', description: 'Durable backpack', reviews: [] },
+                { id: 11, name: 'Sneakers', price: 59, category: 'Clothing', stock: 22, image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff', description: 'Comfortable sneakers', reviews: [] },
+                { id: 12, name: 'Tablet', price: 399, category: 'Electronics', stock: 7, image: 'https://images.unsplash.com/photo-1516321310769-2f51a95e9f80', description: 'Portable tablet', reviews: [] },
+                { id: 13, name: 'Coffee Maker', price: 79, category: 'Home', stock: 10, image: 'https://images.unsplash.com/photo-1591621771847-4a4e7c6f78c6', description: 'Automatic coffee maker', reviews: [] },
+                { id: 14, name: 'Blender', price: 49, category: 'Home', stock: 15, image: 'https://images.unsplash.com/photo-1585238342024-78d387f4a707', description: 'High-speed blender', reviews: [] },
+                { id: 15, name: 'Desk Lamp', price: 29, category: 'Home', stock: 20, image: 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c', description: 'LED desk lamp', reviews: [] },
+                { id: 16, name: 'Monitor', price: 199, category: 'Electronics', stock: 6, image: 'https://images.unsplash.com/photo-1586216647475-1c5b6d761b4a', description: 'HD monitor', reviews: [] },
+                { id: 17, name: 'Keyboard', price: 49, category: 'Electronics', stock: 12, image: 'https://images.unsplash.com/photo-1587829748829-1d431b8c3203', description: 'Mechanical keyboard', reviews: [] },
+                { id: 18, name: 'Mouse', price: 29, category: 'Electronics', stock: 25, image: 'https://images.unsplash.com/photo-1613146061451-24f2f7c36d5a', description: 'Wireless mouse', reviews: [] },
+                { id: 19, name: 'Printer', price: 99, category: 'Electronics', stock: 4, image: 'https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6', description: 'All-in-one printer', reviews: [] },
+                { id: 20, name: 'Router', price: 89, category: 'Electronics', stock: 9, image: 'https://images.unsplash.com/photo-1598961942613-a3609e0c1a91', description: 'WiFi router', reviews: [] },
+            ];
+            localStorage.setItem('products', JSON.stringify(products));
+        }
+
+        let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        let wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+        let users = JSON.parse(localStorage.getItem('users') || '[{ "username": "admin", "email": "admin@example.com", "password": "admin", "role": "admin" }]');
+        let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+        let orders = JSON.parse(localStorage.getItem('orders') || '[]');
+        let allReviews = JSON.parse(localStorage.getItem('reviews') || '{}');
+        let discountCodes = JSON.parse(localStorage.getItem('discountCodes') || '[{ "code": "SAVE10", "percent": 10 }, { "code": "SAVE20", "percent": 20 }]');
+        let selectedProduct = null;
+        let currentCategory = 'All';
+        let currentSearch = '';
+        let currentSort = '';
+        let currentPage = 1;
+        let maxPrice = 1000;
+        let stockFilter = 'all';
+        const itemsPerPage = 9;
+        let appliedDiscount = 0;
+        let adminSearch = '';
+
+        function toggleCategories() {
+            const menu = document.getElementById('categoriesMenu');
+            menu.classList.toggle('hidden');
+            menu.classList.toggle('active');
+        }
+
+        function toggleSearch() {
+            const searchBar = document.getElementById('searchBar');
+            searchBar.classList.toggle('active');
+        }
+
+        function checkLowStock() {
+            const lowStockProducts = products.filter(p => p.stock > 0 && p.stock <= 5);
+            const alertDiv = document.getElementById('lowStockAlert');
+            if (lowStockProducts.length > 0) {
+                alertDiv.innerHTML = `Low Stock Alert: ${lowStockProducts.map(p => p.name).join(', ')}`;
+                alertDiv.style.display = 'block';
+                setTimeout(() => {
+                    alertDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        function renderProducts() {
+            const filtered = getFilteredProducts();
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const paginated = filtered.slice(start, end);
+            const productsContainer = document.getElementById('products');
+            productsContainer.innerHTML = '';
+            paginated.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                let stockClass = '';
+                let stockText = `Stock: ${product.stock}`;
+                if (product.stock === 0) {
+                    stockClass = 'out';
+                    stockText = 'Out of Stock';
+                } else if (product.stock <= 5) {
+                    stockClass = 'low';
+                    stockText = `Low Stock: ${product.stock}`;
+                }
+                card.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1501426026826-31c667bdf23d';">
+                    <h3>${product.name}</h3>
+                    <p>$${product.price}</p>
+                    <p class="stock-status ${stockClass}">${stockText}</p>
+                `;
+                card.onclick = () => showProductDetails(product);
+                productsContainer.appendChild(card);
+            });
+            renderPagination(filtered.length);
+        }
+
+        function getFilteredProducts() {
+            let filtered = products;
+
+            if (currentCategory !== 'All') {
+                filtered = filtered.filter(p => p.category === currentCategory);
+            }
+
+            if (currentSearch) {
+                filtered = filtered.filter(p => p.name.toLowerCase().includes(currentSearch));
+            }
+
+            filtered = filtered.filter(p => p.price <= maxPrice);
+
+            if (stockFilter !== 'all') {
+                if (stockFilter === 'in-stock') {
+                    filtered = filtered.filter(p => p.stock > 0);
+                } else if (stockFilter === 'low-stock') {
+                    filtered = filtered.filter(p => p.stock > 0 && p.stock <= 5);
+                } else if (stockFilter === 'out-of-stock') {
+                    filtered = filtered.filter(p => p.stock === 0);
+                }
+            }
+
+            if (currentSort) {
+                const [key, dir] = currentSort.split('-');
+                filtered = filtered.sort((a, b) => {
+                    if (key === 'price') {
+                        return dir === 'asc' ? a.price - b.price : b.price - a.price;
+                    } else if (key === 'name') {
+                        return dir === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
+                    }
+                });
+            }
+
+            return filtered;
+        }
+
+        function renderPagination(totalItems) {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            for (let i = 1; i <= totalPages; i++) {
+                const btn = document.createElement('button');
+                btn.textContent = i;
+                btn.disabled = i === currentPage;
+                btn.onclick = () => {
+                    currentPage = i;
+                    renderProducts();
+                };
+                pagination.appendChild(btn);
+            }
+        }
+
+        function populateCategories() {
+            const categories = ['All', ...new Set(products.map(p => p.category))];
+            const ul = document.getElementById('categories');
+            const ulMobile = document.getElementById('categoriesMobile');
+            ul.innerHTML = '';
+            ulMobile.innerHTML = '';
+            categories.forEach(cat => {
+                const li = document.createElement('li');
+                li.textContent = cat;
+                li.onclick = () => {
+                    filterByCategory(cat);
+                };
+                if (cat === currentCategory) li.classList.add('active');
+                ul.appendChild(li);
+                const liMobile = li.cloneNode(true);
+                liMobile.onclick = () => {
+                    filterByCategory(cat);
+                    toggleCategories();
+                };
+                ulMobile.appendChild(liMobile);
+            });
+        }
+
+        function filterByCategory(category) {
+            currentCategory = category;
+            currentPage = 1;
+            populateCategories();
+            renderProducts();
+        }
+
+        function searchProducts() {
+            currentSearch = document.getElementById('searchInput').value.toLowerCase();
+            currentPage = 1;
+            renderProducts();
+        }
+
+        function filterByPrice() {
+            maxPrice = parseInt(document.getElementById('priceRange').value);
+            document.getElementById('priceRangeValue').textContent = `$0 - $${maxPrice}`;
+            currentPage = 1;
+            renderProducts();
+        }
+
+        function filterByStock() {
+            stockFilter = document.getElementById('stockFilter').value;
+            currentPage = 1;
+            renderProducts();
+        }
+
+        function showProductDetails(product) {
+            selectedProduct = product;
+            document.getElementById('detailImage').src = product.image;
+            document.getElementById('detailName').textContent = product.name;
+            document.getElementById('detailDescription').textContent = product.description;
+            document.getElementById('detailPrice').textContent = `$${product.price}`;
+            document.getElementById('detailStock').textContent = product.stock === 0 ? 'Out of Stock' : `Stock: ${product.stock}`;
+            document.getElementById('addToCartBtn').disabled = product.stock === 0;
+            updateWishlistButton();
+            renderReviews();
+            showModal('productModal');
+        }
+
+        function updateWishlistButton() {
+            const btn = document.getElementById('wishlistBtn');
+            const inWishlist = wishlist.some(item => item.id === selectedProduct.id);
+            btn.textContent = inWishlist ? 'Remove from Wishlist' : 'Add to Wishlist';
+        }
+
+        function toggleWishlist() {
+            if (!currentUser) {
+                alert('Please login to manage wishlist');
+                showModal('loginModal');
+                return;
+            }
+            const index = wishlist.findIndex(item => item.id === selectedProduct.id);
+            if (index > -1) {
+                wishlist.splice(index, 1);
+            } else {
+                wishlist.push(selectedProduct);
+            }
+            saveWishlist();
+            updateWishlist();
+            updateWishlistButton();
+        }
+
+        function renderReviews() {
+            const reviewsList = document.getElementById('reviewsList');
+            reviewsList.innerHTML = '';
+            const reviews = allReviews[selectedProduct.id] || [];
+            reviews.forEach(review => {
+                const div = document.createElement('div');
+                div.className = 'review';
+                div.innerHTML = `
+                    <p><strong>${review.user}:</strong> ${review.text}</p>
+                `;
+                reviewsList.appendChild(div);
+            });
+        }
+
+        function addReview() {
+            if (!currentUser) {
+                alert('Please login to add review');
+                showModal('loginModal');
+                return;
+            }
+            const text = document.getElementById('reviewText').value.trim();
+            if (!text) return;
+            if (!allReviews[selectedProduct.id]) allReviews[selectedProduct.id] = [];
+            allReviews[selectedProduct.id].push({ user: currentUser.username, text });
+            localStorage.setItem('reviews', JSON.stringify(allReviews));
+            document.getElementById('reviewText').value = '';
+            renderReviews();
+        }
+
+        function addToCartFromDetails() {
+            if (selectedProduct.stock === 0) {
+                alert('This product is out of stock');
+                return;
+            }
+            addToCart(selectedProduct.id);
+            closeModal('productModal');
+        }
+
+        function addToCart(productId) {
+            if (!currentUser) {
+                alert('Please login to add to cart');
+                showModal('loginModal');
+                return;
+            }
+            const product = products.find(p => p.id === productId);
+            if (product.stock === 0) {
+                alert('This product is out of stock');
+                return;
+            }
+            const item = cart.find(i => i.id === productId);
+            if (item) {
+                if (item.quantity + 1 > product.stock) {
+                    alert('Cannot add more items than available in stock');
+                    return;
+                }
+                item.quantity += 1;
+            } else {
+                cart.push({ ...product, quantity: 1 });
+            }
+            saveCart();
+            updateCart();
+            checkLowStock();
+        }
+
+        function updateCart() {
+            const cartItems = document.getElementById('cartItems');
+            cartItems.innerHTML = '';
+            let total = 0;
+            let count = 0;
+            cart.forEach(item => {
+                total += item.price * item.quantity;
+                count += item.quantity;
+                const product = products.find(p => p.id === item.id);
+                const maxQuantity = product ? product.stock : item.quantity;
+                const div = document.createElement('div');
+                div.className = 'cart-item';
+                div.innerHTML = `
+                    <span>${item.name} - $${item.price} x</span>
+                    <div class="quantity">
+                        <button onclick="changeQuantity(${item.id}, -1)">-</button>
+                        <span>${item.quantity}</span>
+                        <button onclick="changeQuantity(${item.id}, 1)" ${item.quantity >= maxQuantity ? 'disabled' : ''}>+</button>
+                    </div>
+                    <button onclick="removeFromCart(${item.id})">Remove</button>
+                `;
+                cartItems.appendChild(div);
+            });
+            document.getElementById('cartTotal').textContent = total.toFixed(2);
+            updateCheckoutTotal(total);
+            document.getElementById('cartCount').textContent = count;
+        }
+
+        function changeQuantity(id, delta) {
+            const item = cart.find(i => i.id === id);
+            const product = products.find(p => p.id === id);
+            if (item && product) {
+                if (delta > 0 && item.quantity + delta > product.stock) {
+                    alert('Cannot add more items than available in stock');
+                    return;
+                }
+                item.quantity += delta;
+                if (item.quantity <= 0) removeFromCart(id);
+                else saveCart();
+                updateCart();
+                checkLowStock();
+            }
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(i => i.id !== id);
+            saveCart();
+            updateCart();
+            checkLowStock();
+        }
+
+        function saveCart() {
+            localStorage.setItem('cart', JSON.stringify(cart));
+        }
+
+        function updateWishlist() {
+            const wishlistItems = document.getElementById('wishlistItems');
+            wishlistItems.innerHTML = '';
+            wishlist.forEach(item => {
+                const product = products.find(p => p.id === item.id);
+                const stockText = product ? (product.stock === 0 ? 'Out of Stock' : `Stock: ${product.stock}`) : 'Unavailable';
+                const div = document.createElement('div');
+                div.className = 'wishlist-item';
+                div.innerHTML = `
+                    <span>${item.name} - $${item.price} (${stockText})</span>
+                    <button onclick="removeFromWishlist(${item.id})">Remove</button>
+                    <button onclick="addToCart(${item.id}); closeModal('wishlistModal')" ${product && product.stock === 0 ? 'disabled' : ''}>Add to Cart</button>
+                `;
+                wishlistItems.appendChild(div);
+            });
+            document.getElementById('wishlistCount').textContent = wishlist.length;
+        }
+
+        function removeFromWishlist(id) {
+            wishlist = wishlist.filter(i => i.id !== id);
+            saveWishlist();
+            updateWishlist();
+        }
+
+        function saveWishlist() {
+            localStorage.setItem('wishlist', JSON.stringify(wishlist));
+        }
+
+        function applyDiscount() {
+            const code = document.getElementById('discountCode').value.trim();
+            const discount = discountCodes.find(d => d.code === code);
+            if (discount) {
+                appliedDiscount = discount.percent;
+                document.getElementById('discountAmount').textContent = `${appliedDiscount}%`;
+                const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+                updateCheckoutTotal(total);
+                alert('Discount applied!');
+            } else {
+                alert('Invalid discount code');
+            }
+        }
+
+        function updateCheckoutTotal(total) {
+            const discountedTotal = total * (1 - appliedDiscount / 100);
+            document.getElementById('checkoutTotal').textContent = discountedTotal.toFixed(2);
+        }
+
+        function register() {
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const role = document.getElementById('regRole').value;
+            if (users.find(u => u.username === username)) {
+                alert('Username already exists');
+                return;
+            }
+            users.push({ username, email, password, role });
+            localStorage.setItem('users', JSON.stringify(users));
+            alert('Registered successfully. Please login.');
+            closeModal('registerModal');
+            showModal('loginModal');
+        }
+
+        function login() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            const user = users.find(u => u.username === username && u.password === password);
+            if (user) {
+                currentUser = user;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                updateUserUI();
+                closeModal('loginModal');
+                checkLowStock();
+            } else {
+                alert('Invalid credentials');
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            cart = [];
+            wishlist = [];
+            saveCart();
+            saveWishlist();
+            updateCart();
+            updateWishlist();
+            updateUserUI();
+        }
+
+        function updateProfile() {
+            const email = document.getElementById('profileEmail').value;
+            const password = document.getElementById('profilePassword').value;
+            if (!email) {
+                alert('Email is required');
+                return;
+            }
+            const user = users.find(u => u.username === currentUser.username);
+            if (user) {
+                user.email = email;
+                if (password) user.password = password;
+                localStorage.setItem('users', JSON.stringify(users));
+                currentUser = user;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                alert('Profile updated');
+                closeModal('profileModal');
+                updateUserUI();
+            }
+        }
+
+        function updateUserUI() {
+            if (currentUser) {
+                document.getElementById('userName').textContent = `Hi, ${currentUser.username}`;
+                document.getElementById('loginBtn').style.display = 'none';
+                document.getElementById('registerBtn').style.display = 'none';
+                document.getElementById('logoutBtn').style.display = 'inline';
+                document.getElementById('profileBtn').style.display = 'inline';
+                document.getElementById('adminBtn').style.display = currentUser.role === 'admin' ? 'inline' : 'none';
+                document.getElementById('orderHistory').style.display = 'block';
+                renderOrders();
+            } else {
+                document.getElementById('userName').textContent = '';
+                document.getElementById('loginBtn').style.display = 'inline';
+                document.getElementById('registerBtn').style.display = 'inline';
+                document.getElementById('logoutBtn').style.display = 'none';
+                document.getElementById('profileBtn').style.display = 'none';
+                document.getElementById('adminBtn').style.display = 'none';
+                document.getElementById('orderHistory').style.display = 'none';
+            }
+        }
+
+        function placeOrder() {
+            if (cart.length === 0) {
+                alert('Cart is empty');
+                return;
+            }
+            const address = document.getElementById('address').value;
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            if (!address) {
+                alert('Please enter shipping address');
+                return;
+            }
+            const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            const discountedTotal = total * (1 - appliedDiscount / 100);
+            const order = {
+                id: Date.now(),
+                user: currentUser.username,
+                items: [...cart],
+                total: discountedTotal,
+                address,
+                paymentMethod,
+                date: new Date().toLocaleString(),
+                status: 'Pending'
+            };
+            orders.push(order);
+            cart.forEach(item => {
+                const product = products.find(p => p.id === item.id);
+                if (product) {
+                    product.stock -= item.quantity;
+                    if (product.stock < 0) product.stock = 0;
+                }
+            });
+            localStorage.setItem('orders', JSON.stringify(orders));
+            localStorage.setItem('products', JSON.stringify(products));
+            cart = [];
+            appliedDiscount = 0;
+            saveCart();
+            updateCart();
+            closeModal('checkoutModal');
+            alert('Order placed successfully!');
+            renderOrders();
+            renderProducts();
+            checkLowStock();
+        }
+
+        function renderOrders() {
+            const ordersList = document.getElementById('ordersList');
+            ordersList.innerHTML = '';
+            const userOrders = orders.filter(o => o.user === currentUser.username);
+            userOrders.forEach(order => {
+                const div = document.createElement('div');
+                div.className = 'order';
+                div.innerHTML = `
+                    <h3>Order #${order.id}</h3>
+                    <p>Date: ${order.date}</p>
+                    <p>Status: ${order.status}</p>
+                    <p>Total: $${order.total.toFixed(2)}</p>
+                    <p>Address: ${order.address}</p>
+                    <p>Payment: ${order.paymentMethod}</p>
+                    <ul>
+                        ${order.items.map(item => `<li>${item.name} x${item.quantity} - $${item.price * item.quantity}</li>`).join('')}
+                    </ul>
+                `;
+                ordersList.appendChild(div);
+            });
+        }
+
+        function renderAdminPanel() {
+            renderAdminProducts();
+            renderAdminUsers();
+            renderAdminOrders();
+            renderAdminDiscounts();
+        }
+
+        function renderAdminProducts() {
+            const tbody = document.getElementById('adminProductsTable').querySelector('tbody');
+            tbody.innerHTML = '';
+            const filtered = products.filter(p => p.name.toLowerCase().includes(adminSearch));
+            filtered.forEach(product => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${product.id}</td>
+                    <td>${product.name}</td>
+                    <td>$${product.price}</td>
+                    <td>${product.category}</td>
+                    <td>${product.stock}</td>
+                    <td>
+                        <button onclick="editProduct(${product.id})">Edit</button>
+                        <button onclick="deleteProduct(${product.id})">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function addProduct() {
+            const name = document.getElementById('adminProductName').value;
+            const price = parseFloat(document.getElementById('adminProductPrice').value);
+            const category = document.getElementById('adminProductCategory').value;
+            const stock = parseInt(document.getElementById('adminProductStock').value);
+            const description = document.getElementById('adminProductDesc').value;
+            const fileInput = document.getElementById('adminProductImage');
+            if (!name || !price || !category || isNaN(stock) || !description) {
+                alert('Please fill all fields');
+                return;
+            }
+            const id = Math.max(...products.map(p => p.id), 0) + 1;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const image = fileInput.files.length ? e.target.result : 'https://images.unsplash.com/photo-1501426026826-31c667bdf23d';
+                products.push({ id, name, price, category, stock, image, description, reviews: [] });
+                localStorage.setItem('products', JSON.stringify(products));
+                populateCategories();
+                renderProducts();
+                renderAdminProducts();
+                document.getElementById('adminProductName').value = '';
+                document.getElementById('adminProductPrice').value = '';
+                document.getElementById('adminProductCategory').value = '';
+                document.getElementById('adminProductStock').value = '';
+                document.getElementById('adminProductImage').value = '';
+                document.getElementById('adminProductDesc').value = '';
+                alert('Product added');
+                checkLowStock();
+            };
+            if (fileInput.files.length) {
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                reader.onload({ target: { result: null } });
+            }
+        }
+
+        function editProduct(id) {
+            const product = products.find(p => p.id === id);
+            if (product) {
+                document.getElementById('editProductId').value = product.id;
+                document.getElementById('editProductName').value = product.name;
+                document.getElementById('editProductPrice').value = product.price;
+                document.getElementById('editProductCategory').value = product.category;
+                document.getElementById('editProductStock').value = product.stock;
+                document.getElementById('editProductDesc').value = product.description;
+                showModal('adminModal');
+            }
+        }
+
+        function updateProduct() {
+            const id = parseInt(document.getElementById('editProductId').value);
+            const name = document.getElementById('editProductName').value;
+            const price = parseFloat(document.getElementById('editProductPrice').value);
+            const category = document.getElementById('editProductCategory').value;
+            const stock = parseInt(document.getElementById('editProductStock').value);
+            const description = document.getElementById('editProductDesc').value;
+            const fileInput = document.getElementById('editProductImage');
+            if (!name || !price || !category || isNaN(stock) || !description) {
+                alert('Please fill all fields');
+                return;
+            }
+            const product = products.find(p => p.id === id);
+            if (!product) return;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                product.name = name;
+                product.price = price;
+                product.category = category;
+                product.stock = stock;
+                product.image = fileInput.files.length ? e.target.result : product.image;
+                product.description = description;
+                localStorage.setItem('products', JSON.stringify(products));
+                populateCategories();
+                renderProducts();
+                renderAdminProducts();
+                document.getElementById('editProductId').value = '';
+                document.getElementById('editProductName').value = '';
+                document.getElementById('editProductPrice').value = '';
+                document.getElementById('editProductCategory').value = '';
+                document.getElementById('editProductStock').value = '';
+                document.getElementById('editProductImage').value = '';
+                document.getElementById('editProductDesc').value = '';
+                alert('Product updated');
+                checkLowStock();
+            };
+            if (fileInput.files.length) {
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                reader.onload({ target: { result: null } });
+            }
+        }
+
+        function deleteProduct(id) {
+            products = products.filter(p => p.id !== id);
+            localStorage.setItem('products', JSON.stringify(products));
+            populateCategories();
+            renderProducts();
+            renderAdminProducts();
+            checkLowStock();
+        }
+
+        function renderAdminUsers() {
+            const tbody = document.getElementById('adminUsersTable').querySelector('tbody');
+            tbody.innerHTML = '';
+            users.forEach(user => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${user.username}</td>
+                    <td>${user.email}</td>
+                    <td>${user.role}</td>
+                    <td><button onclick="deleteUser('${user.username}')">Delete</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function deleteUser(username) {
+            if (username === 'admin') {
+                alert('Cannot delete admin');
+                return;
+            }
+            users = users.filter(u => u.username !== username);
+            localStorage.setItem('users', JSON.stringify(users));
+            renderAdminUsers();
+        }
+
+        function renderAdminOrders() {
+            const tbody = document.getElementById('adminOrdersTable').querySelector('tbody');
+            tbody.innerHTML = '';
+            orders.forEach(order => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${order.id}</td>
+                    <td>${order.user}</td>
+                    <td>$${order.total.toFixed(2)}</td>
+                    <td>${order.date}</td>
+                    <td>
+                        <select onchange="updateOrderStatus(${order.id}, this.value)">
+                            <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                            <option value="Processing" ${order.status === 'Processing' ? 'selected' : ''}>Processing</option>
+                            <option value="Shipped" ${order.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
+                            <option value="Delivered" ${order.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                            <option value="Cancelled" ${order.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                        </select>
+                    </td>
+                    <td><button onclick="deleteOrder(${order.id})">Delete</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateOrderStatus(id, status) {
+            const order = orders.find(o => o.id === id);
+            if (order) {
+                order.status = status;
+                if (status === 'Cancelled') {
+                    order.items.forEach(item => {
+                        const product = products.find(p => p.id === item.id);
+                        if (product) product.stock += item.quantity;
+                    });
+                    localStorage.setItem('products', JSON.stringify(products));
+                    renderProducts();
+                    checkLowStock();
+                }
+                localStorage.setItem('orders', JSON.stringify(orders));
+                renderAdminOrders();
+                if (currentUser && currentUser.role !== 'admin') renderOrders();
+            }
+        }
+
+        function deleteOrder(id) {
+            const order = orders.find(o => o.id === id);
+            if (order && order.status !== 'Cancelled') {
+                order.items.forEach(item => {
+                    const product = products.find(p => p.id === item.id);
+                    if (product) product.stock += item.quantity;
+                });
+                localStorage.setItem('products', JSON.stringify(products));
+                renderProducts();
+                checkLowStock();
+            }
+            orders = orders.filter(o => o.id !== id);
+            localStorage.setItem('orders', JSON.stringify(orders));
+            renderAdminOrders();
+            if (currentUser && currentUser.role !== 'admin') renderOrders();
+        }
+
+        function renderAdminDiscounts() {
+            const tbody = document.getElementById('adminDiscountsTable').querySelector('tbody');
+            tbody.innerHTML = '';
+            discountCodes.forEach(d => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${d.code}</td>
+                    <td>${d.percent}%</td>
+                    <td><button onclick="deleteDiscountCode('${d.code}')">Delete</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function addDiscountCode() {
+            const code = document.getElementById('adminDiscountCode').value.trim();
+            const percent = parseInt(document.getElementById('adminDiscountPercent').value);
+            if (!code || !percent) {
+                alert('Please fill all fields');
+                return;
+            }
+            if (discountCodes.find(d => d.code === code)) {
+                alert('Code already exists');
+                return;
+            }
+            discountCodes.push({ code, percent });
+            localStorage.setItem('discountCodes', JSON.stringify(discountCodes));
+            renderAdminDiscounts();
+            alert('Discount code added');
+        }
+
+        function deleteDiscountCode(code) {
+            discountCodes = discountCodes.filter(d => d.code !== code);
+            localStorage.setItem('discountCodes', JSON.stringify(discountCodes));
+            renderAdminDiscounts();
+        }
+
+        function showModal(id) {
+            if (id === 'adminModal' && currentUser && currentUser.role === 'admin') {
+                renderAdminPanel();
+            } else if (id === 'profileModal' && currentUser) {
+                document.getElementById('profileUsername').value = currentUser.username;
+                document.getElementById('profileEmail').value = currentUser.email;
+                document.getElementById('profilePassword').value = '';
+            }
+            document.getElementById(id).style.display = 'flex';
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+            if (id === 'cartModal' || id === 'checkoutModal') checkLowStock();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            products.forEach(p => p.reviews = allReviews[p.id] || []);
+            populateCategories();
+            renderProducts();
+            updateCart();
+            updateWishlist();
+            updateUserUI();
+            checkLowStock();
+        });
+    </script>
+</body>
+
+</html>
